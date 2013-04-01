@@ -1,0 +1,48 @@
+The basic idea with hfk is to optimise away the redundant duplication
+of files as in filekeeper. Even if files don't change between
+iterations, they are re-stored in their entirety in the backup
+folder under filekeeper. To this end, we impose a new structure to
+store just uniquely identifying bits of files and then look them up.
+
+A sample directory structure:
+
+main_dir/
+  sub_dir1:
+    foo
+    bar
+  baz
+  .hfk/
+    index
+    revisions/
+      0
+      1
+      2
+    files/
+      $HASH1
+      $HASH2
+      $HASH3
+
+What is going on here?
+
+Instead of imposing the repo structure at the actual file-system
+level, we impose it in the record keeping level. In particular, in the
+.hfk directory, the revisions directory contains files, each of whose
+contents may look something like this:
+
+$ cat .hfk/revisions/1
+sub_dir1/foo [--HASH--]
+sub_dir1/bar [--HASH--]
+baz [--HASH--]
+
+where [--HASH--] is some digest identifying the file in question and
+the first field simply tells hfk where the file should go in the
+structure. Thus, to recover the file we simply lookup the file with
+the correct hash in the files directory and copy it over to the
+working directory with the path and name specified in the first
+field. If we lose a revision file, however, there is no easy way to
+reconstruct the contents of the repo.
+
+Adding a file in this structure is relatively straightforward, when
+committing we merely hash it and check if it exists in the files
+folder, if not, we copy it over and include the appropriate reference
+in the revision file either way.

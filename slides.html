@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<!-- Taken from boilerplate from deck.js -->
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=1024, user-scalable=no">
+
+	<title>devwithGit</title>
+	
+	<!-- Required stylesheet -->
+	<link rel="stylesheet" href="lib/deckjs/core/deck.core.css">
+	
+	<!-- Extension CSS files go here. Remove or add as needed. -->
+	<link rel="stylesheet" href="lib/deckjs/extensions/goto/deck.goto.css">
+	<link rel="stylesheet" href="lib/deckjs/extensions/menu/deck.menu.css">
+	<link rel="stylesheet" href="lib/deckjs/extensions/navigation/deck.navigation.css">
+	<link rel="stylesheet" href="lib/deckjs/extensions/status/deck.status.css">
+	<link rel="stylesheet" href="lib/deckjs/extensions/hash/deck.hash.css">
+	<link rel="stylesheet" href="lib/deckjs/extensions/scale/deck.scale.css">
+
+	<!-- Style theme. More available in /themes/style/ or create your own. -->
+	<link rel="stylesheet" href="lib/deckjs/themes/style/web-2.0.css">
+	
+	<!-- Transition theme. More available in /themes/transition/ or create your own. -->
+	<link rel="stylesheet" href="lib/deckjs/themes/transition/horizontal-slide.css">
+	
+	<!-- Required Modernizr file -->
+        <script src="lib/deckjs/modernizr.custom.js"></script>
+
+        <!-- Our visualisation software -->
+        <script src="lib/d3.v2.min.js"></script>
+        <script type="text/javascript" src=git_visi/GitStates.js></script>
+        <script type="text/javascript" src=git_visi/GitTree.js></script>
+        <style>
+        /* TODO: move all of this out into different css files */
+        .link {
+            stroke: black;
+        }
+        path.link{
+                fill:none;
+                stroke: black;
+                stroke-width: 4px;
+        }
+        .node text {
+          pointer-events: none;
+          font: 20px sans-serif;
+          color:blue;
+        }
+         article {
+            position: absolute;
+            top: 32px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+          }
+         article > .slide {
+            width: 1024px;
+            padding: 0 10px;
+            height: 100%;
+            margin: 0 auto;
+          }
+         article > .slide h2 {
+            border-bottom: 0;
+            padding-top: 0;
+            padding-bottom: 0.5em;
+            margin: 0;
+            font-size:2em;
+        }
+         article > .slide h1 {
+            border-bottom: 0;
+            padding-top: 0;
+            padding-bottom: 1em;
+            margin: 0;
+            font-size:3em;
+        }
+        article > .slide p {
+            font-size:1em;
+        }
+        article > .slide pre {
+            font-size:16px;
+        }
+
+        .on-slide-bb_verify span.bb_backups *,
+        .on-slide-bb_backup span.bb_verifies *,
+        .on-slide-br_verify span.br_restores *,
+        .on-slide-br_restore span.br_verifies *,
+        .on-slide-fb_verify span.fb_backups *,
+        .on-slide-fb_backup span.fb_verifies *,
+        .on-slide-fr_verify span.fr_restores *,
+        .on-slide-fr_restore span.fr_verifies *,
+        .on-slide-bb_verify span.other *,
+        .on-slide-bb_backup span.other *,
+        .on-slide-br_verify span.other *,
+        .on-slide-br_restore span.other *,
+        .on-slide-fb_verify span.other *,
+        .on-slide-fb_backup span.other *,
+        .on-slide-fr_verify span.other *,
+        .on-slide-fr_restore span.other *
+        {
+            color: grey;
+            font-style: normal;
+        }
+
+        .on-slide-bb_verify span.bb_verifies *, 
+        .on-slide-bb_backup span.bb_backups *, 
+        .on-slide-br_verify span.br_verifies *,
+        .on-slide-fb_verify span.fb_verifies *,
+        .on-slide-fb_backup span.fb_backups *,
+        .on-slide-br_restore span.br_restores *,
+        .on-slide-fr_verify span.fr_verifies *,
+        .on-slide-fr_restore span.fr_restores *{
+            background: #FFFFE0;
+        }
+
+        .left{
+            float:left;
+            width: 40%;
+            padding:10px; 
+        }
+        .right{
+            float:right;
+            width: 60%;
+            padding:10px;
+        }
+        .git_con{
+            clear:both;
+        }
+        .git_left{
+            float:left;
+            width: 60%;
+            padding:10px; 
+        }
+
+        .git_right {
+            float:right;
+            width: 40%;
+            padding:10px;
+        }
+        .left_col{
+            float:left;
+            width:33%;
+        }
+        .center_col{
+            margin-left:auto;
+            margin-right:auto;
+            width:33%;
+        }
+        .right_col{
+            float:right;
+            width:33%;
+        }
+        
+        .highlight .hll { background-color: #ffffcc }
+        .highlight  { background: #f8f8f8; }
+        .highlight .c { color: #408080; font-style: italic } /* Comment */
+        .highlight .err { border: 1px solid #FF0000 } /* Error */
+        .highlight .k { color: #008000; font-weight: bold } /* Keyword */
+        .highlight .o { color: #666666 } /* Operator */
+        .highlight .cm { color: #408080; font-style: italic } /* Comment.Multiline */
+        .highlight .cp { color: #BC7A00 } /* Comment.Preproc */
+        .highlight .c1 { color: #408080; font-style: italic } /* Comment.Single */
+        .highlight .cs { color: #408080; font-style: italic } /* Comment.Special */
+        .highlight .gd { color: #A00000 } /* Generic.Deleted */
+        .highlight .ge { font-style: italic } /* Generic.Emph */
+        .highlight .gr { color: #FF0000 } /* Generic.Error */
+        .highlight .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+        .highlight .gi { color: #00A000 } /* Generic.Inserted */
+        .highlight .go { color: #888888 } /* Generic.Output */
+        .highlight .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+        .highlight .gs { font-weight: bold } /* Generic.Strong */
+        .highlight .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+        .highlight .gt { color: #0044DD } /* Generic.Traceback */
+        .highlight .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+        .highlight .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+        .highlight .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+        .highlight .kp { color: #008000 } /* Keyword.Pseudo */
+        .highlight .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+        .highlight .kt { color: #B00040 } /* Keyword.Type */
+        .highlight .m { color: #666666 } /* Literal.Number */
+        .highlight .s { color: #BA2121 } /* Literal.String */
+        .highlight .na { color: #7D9029 } /* Name.Attribute */
+        .highlight .nb { color: #008000 } /* Name.Builtin */
+        .highlight .nc { color: #0000FF; font-weight: bold } /* Name.Class */
+        .highlight .no { color: #880000 } /* Name.Constant */
+        .highlight .nd { color: #AA22FF } /* Name.Decorator */
+        .highlight .ni { color: #999999; font-weight: bold } /* Name.Entity */
+        .highlight .ne { color: #D2413A; font-weight: bold } /* Name.Exception */
+        .highlight .nf { color: #0000FF } /* Name.Function */
+        .highlight .nl { color: #A0A000 } /* Name.Label */
+        .highlight .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
+        .highlight .nt { color: #008000; font-weight: bold } /* Name.Tag */
+        .highlight .nv { color: #19177C } /* Name.Variable */
+        .highlight .ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
+        .highlight .w { color: #bbbbbb } /* Text.Whitespace */
+        .highlight .mf { color: #666666 } /* Literal.Number.Float */
+        .highlight .mh { color: #666666 } /* Literal.Number.Hex */
+        .highlight .mi { color: #666666 } /* Literal.Number.Integer */
+        .highlight .mo { color: #666666 } /* Literal.Number.Oct */
+        .highlight .sb { color: #BA2121 } /* Literal.String.Backtick */
+        .highlight .sc { color: #BA2121 } /* Literal.String.Char */
+        .highlight .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+        .highlight .s2 { color: #BA2121 } /* Literal.String.Double */
+        .highlight .se { color: #BB6622; font-weight: bold } /* Literal.String.Escape */
+        .highlight .sh { color: #BA2121 } /* Literal.String.Heredoc */
+        .highlight .si { color: #BB6688; font-weight: bold } /* Literal.String.Interpol */
+        .highlight .sx { color: #008000 } /* Literal.String.Other */
+        .highlight .sr { color: #BB6688 } /* Literal.String.Regex */
+        .highlight .s1 { color: #BA2121 } /* Literal.String.Single */
+        .highlight .ss { color: #19177C } /* Literal.String.Symbol */
+        .highlight .bp { color: #008000 } /* Name.Builtin.Pseudo */
+        .highlight .vc { color: #19177C } /* Name.Variable.Class */
+        .highlight .vg { color: #19177C } /* Name.Variable.Global */
+        .highlight .vi { color: #19177C } /* Name.Variable.Instance */
+        .highlight .il { color: #666666 } /* Literal.Number.Integer.Long */
+
+        </style>
+</head>
+<body class="deck-container">
+
+<!-- Begin slides. -->
+<article>
+
+<section class="slide">
+<h1>
+    devwithGit: A practical, illustrated getting started guide for
+    incorporating git into your workflow.
+</h1>
+</section>
+<section class="slide">
+<h2>devwithGit v1</h2>
+
+<p>Slides by Steven Rybicki and Tslil Clingman</p>
+<p>These are the draft version of the slides used for the #devwithX talk on 23
+March 2013</p>
+</section>
+<section class="slide">
+<h1>
+    What is version control anyway?
+</h1>
+</section>
+<section class="slide">
+<h2>Defintion of Version Control </h2>
+<div style="background:white">
+    <span class=def> <p>Ver·sion Con·trol:</p> <p>The task of keeping a software system consisting of many versions and
+    configurations well organized. </span>
+    </div>
+    <section class="slide">
+        <p>There're a number of different applications that try to solve this
+        problem:</p>
+        <div class=left_col><img src="pics/200px-Git-logo.svg.png"><center><a href=http://git-scm.com/>git</a></center></div>
+        <div class=right_con>
+          <div class=left_col><center><img src="pics/200px-New_Mercurial_logo.svg.png"><a href=http://mercurial.selenic.com/>mecurial</a></center></div>
+          <div class=right_col><center><img src="pics/250px-Subversion.png"><a href=http://subversion.apache.org/>subversion</a></center></div>
+        </div>
+        <div style="clear:both">
+        <p>Before we examine these individually, we're going to take a brief
+        detour and look at what a version control system actually is.</p>
+        </div>
+        </section>
+</section>
+<section class="slide">
+<h2>What does Version Control software do?</h2>
+<p>Take a step back and ask yourself: How would you create as a program to
+manage versions of your data?</p>
+<p> Ignore everything you've heard about SCM (Source Control Management), just
+    think about how you would do it.</p>
+<ul>
+    <li class=slide><p> What backup features does it have? </p></li>
+    <li class=slide><p> How does it store your data? </p></li>
+    <li class=slide><p> Where does it store your data? </p></li>
+    <ul>
+        <li class=slide><p> Where does it store your data on your pc? </p></li>
+        <li class=slide><p> Does it store your data on a remote server? If so,
+        how?</p></li>
+    </ul>
+    <li class=slide><p> What's more important: ease of use or efficiency? </p></li>
+</ul>
+Git, and other VC systems, each answer these questions in their slightly
+different ways.
+</section>
+
+<section class="slide">
+  <h2>A possible Chain of Thought</h2>
+<p> You may have come up with creative, perhaps even algebraically
+  sound systems between the slides, but for our purposes we will guide
+  you along a simple path that seems to be a plausible evolution of a
+  VCS:
+</p>
+<ul>
+  <li>Folder Backup</li>
+  <li>Indexed Folder Backup</li>
+  <li>Hashed Folder Backup</li>
+</ul>
+
+</section>
+
+<section class="slide">
+<h2>The naive option: Folder Backup</h2>
+<p>If you'd never heard of Version Control and you wanted 
+                  to make  sure your work was backed up, you'd probably make a 
+                  backup folder  somewhere on your drive and simply copy your files 
+                  into it
+</p>
+<p>
+This is a form of version control: 
+                  you are managing two versions of your data, one in your working 
+                  folder and the other a snapshot in a backup folder</p>
+<p>If we made a reasonably sophisticated programme to do this, it would probably be able to: </p>
+<ul>
+    <li class=slide><p> Back your data up into a folder (like .backup) </p></li>
+    <li class=slide><p> Restore your data from a folder over your current one</p></li>
+</ul>
+</section>
+
+<section class="slide">
+<h2>A reasonably sophisticated programme</h2>
+<!-- Generated nicely by Pygments -->
+<div class ="right">
+<div class="highlight"><pre> <span class="other">
+<span class="k">def</span> <span class="nf">backup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Backup into .backup/contents</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+</span> <span class="bb_verifies">       <span class="k">if</span> <span class="ow">not</span> <span class="n">vc</span><span class="o">.</span><span class="n">is_init</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backup_path</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">contents_path</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">index_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">identity_string</span><span class="p">):</span>
+            <span class="k">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">not_exist_msg</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+</span><span class=bb_backups>
+        <span class="n">files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">()</span>
+        <span class="n">files</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backup_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vc</span><span class="o">.</span><span class="n">cp</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">files</span><span class="p">,</span><span class="n">files</span><span class="p">),</span><span class="s">&quot;.&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">contents_path</span><span class="p">)</span>
+        </span>
+</pre></div>
+</div>
+<div class=left>
+    <br>  <br>
+    <li class=slide id="bb_verify"> Verify backup folder is the right one </li>
+    <br> <br>  
+    <li class=slide id="bb_backup"> Backup data into a folder </li>
+</div>
+</section>
+<section class=slide>
+<h2>The naive option: Restoring a backup</h2>
+<div class=right>
+<div class="highlight"><pre> <span class="other"><span class="k">def</span> <span class="nf">restore</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove the current directory&#39;s contents and replace it with .backup/contents</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+</span><span class=br_verifies>        <span class="k">if</span> <span class="ow">not</span> <span class="n">vc</span><span class="o">.</span><span class="n">is_init</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backup_path</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">contents_path</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">index_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">identity_string</span><span class="p">):</span>
+            <span class="k">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">not_exist_msg</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+</span><span class=br_restores>
+        <span class="n">del_files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">()</span>
+        <span class="n">del_files</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backup_path</span><span class="p">)</span>
+        <span class="n">vc</span><span class="o">.</span><span class="n">rm</span><span class="p">(</span><span class="n">del_files</span><span class="p">,</span><span class="s">&quot;.&quot;</span><span class="p">)</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contents_path</span><span class="p">)</span>
+        <span class="n">vc</span><span class="o">.</span><span class="n">cp</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">files</span><span class="p">,</span><span class="n">files</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">contents_path</span><span class="p">,</span><span class="s">&quot;.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</span>
+</pre></div>
+</div>
+<div class=left>
+    <br><br> <br>  <br>
+    <li class=slide id="br_verify"> Verify backup repository is valid </li>
+    <br> <br>  
+    <li class=slide id="br_restore"> Restore data from that folder </li>
+</div>
+</section>
+<section class="slide">
+<h2> Problems with folder backup approach </h2>
+<ul>
+    <li> There can only be one (backup at a time)! What if you ...</li>
+    <ul> 
+        <li> realise you made a mistake some time ago and want to revert?</li>
+        <li> want to look at why a change was made?</li>
+        <li> make a mistake while backing up and lose the working version of your code?</li>
+    </ul>
+    <li> No chance at collaborating: how do you share the one version around? </li>
+    <li> Obviously for this to be successful we need to have multiple
+    versions</li>
+<ul>
+</section>
+
+<section class="slide">
+    <h2>Multiple backup folders</h2>
+    <p> The version control approach that most sufficiently cautious
+    people tend to replicate: copy multiple versions of your data into
+    different, numbered folders.</p>
+<p>This approach greatly extends the capabilities of the previous 
+                  version control software as instead of having only one version to 
+                  examine to see how your data is changing, you can now have as 
+                  many as you want</p>
+    <p>If we made a programme to do this, it should: </p>
+    <ul>
+        <li class=slide><p> Allow you to make multiple copies of your code in a folder </p></li>
+        <li class=slide><p> Restore your code from one of your backups over your current one</p></li>
+</section>
+    
+<section class="slide">
+<h2>The basic option: Backup</h2>
+<div class=right>
+<div class="highlight"><pre> <span class="other"> <span class="k">def</span> <span class="nf">backup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Backup into .backup/contents/x where x is the number of repos plus one.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+</span><span class=fb_verifies>        <span class="k">if</span> <span class="ow">not</span> <span class="n">vc</span><span class="o">.</span><span class="n">is_init</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backup_path</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">contents_path</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">index_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">identity_string</span><span class="p">):</span>
+            <span class="k">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">not_exist_msg</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+</span><span class=fb_backups>
+        <span class="n">backup_no</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_backups</span><span class="p">())</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contents_path</span><span class="p">,</span><span class="n">backup_no</span><span class="p">))</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">()</span>
+        <span class="n">files</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backup_path</span><span class="p">)</span>
+        <span class="n">vc</span><span class="o">.</span><span class="n">cp</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">files</span><span class="p">,</span><span class="n">files</span><span class="p">),</span><span class="s">&quot;.&quot;</span><span class="p">,</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contents_path</span><span class="p">,</span><span class="n">backup_no</span><span class="p">))</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index_path</span><span class="p">,</span><span class="s">&quot;a&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s">;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">backup_no</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())))</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</span>
+</pre></div>
+</div>
+<div left>
+    <br><br> <br>  <br>
+    <ul>
+    <li class=slide id="fb_verify"> Verify backup repository is valid </li>
+    <br> <br>  <br>  <br>
+    <li class=slide id="fb_backup"> Backup the current directory into a
+    numbered backup folder </li>
+</ul>
+</div>
+</section>
+
+<section class="slide">
+<h2>The basic option: Restore</h2>
+<div class=right>
+<div class="highlight"><pre><span class="other"><span class="k">def</span> <span class="nf">restore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">backup_no</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove the current directory&#39;s contents and replace it with backup</span>
+<span class="sd">        number selected</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+</span><span class=fr_verifies>        <span class="k">if</span> <span class="ow">not</span> <span class="n">vc</span><span class="o">.</span><span class="n">is_init</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backup_path</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">contents_path</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">index_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">identity_string</span><span class="p">):</span>
+            <span class="k">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">not_exist_msg</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+</span><span class=fr_restores>
+        <span class="k">if</span> <span class="n">backup_no</span><span class="o">==-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">backup_no</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_backups</span><span class="p">())</span>
+
+        <span class="n">backup_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contents_path</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">backup_no</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">backup_no</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">backup_file_path</span><span class="p">):</span>
+            <span class="k">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no_existing_backup</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="n">del_files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">)</span>
+        <span class="n">del_files</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backup_path</span><span class="p">)</span>
+        <span class="n">vc</span><span class="o">.</span><span class="n">rm</span><span class="p">(</span><span class="n">del_files</span><span class="p">,</span> <span class="s">&quot;.&quot;</span><span class="p">)</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">backup_file_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vc</span><span class="o">.</span><span class="n">cp</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">files</span><span class="p">,</span><span class="n">files</span><span class="p">),</span><span class="n">backup_file_path</span><span class="p">,</span><span class="s">&quot;.&quot;</span><span class="p">)</span>
+</span>
+</pre></div>
+</div>
+
+<div class=left>
+    <br><br> <br>  <br>
+    <ul>
+    <li class=slide id="fr_verify"> Verify backup repository is valid </li>
+    <br> <br>  <br>  <br>
+    <li class=slide id="fr_restore"> Restore from the selected backup, last
+    made backup if not specified </li>
+</ul>
+</div>
+</section>
+
+<section class="slide">
+<h2>Problems with just using multiple folders</h2>
+
+<p> While this is definitely a major improvement over our first version, there are still a number of outstanding issues</p>
+
+<ul>
+    <li> It wastes a collosal amount of space </li>
+    <ul>      
+      <li> Simply renaming a file ensures that it is copied to the
+        backup folder when clearly nothing about its content has changed</li>
+        <li>By the very nature of file-oriented work, most data is 
+              unchanging between backups </li>
+        <li> This means that by backing up it's very possible that you
+        are creating duplicates of certain files (completed code &amp;c.)</li>
+    </ul>
+    <li> How would you track changes between iterations or know when
+      their contents have changed?</li>
+    <li> If you wanted to colloborate with this programme, how would the fact
+    that the versions are only numbered relative to your backups impact
+    collaboration?</li>
+<ul>
+<p>
+It would seem that these problems all stem from a lack of an
+underlying structure. Enter the hashing scheme.</p>
+</section>
+
+<section class="slide">
+  <h2> The saviour of our version control endeavour: hashing</h2>
+  <p> Otherwise known as the approach that seems obvious in retrospect.</p>
+  <p> In order to eliminate file duplication and provide assurance for file
+    integrity, we hash every file before it's backed up.</p>
+  <p> This also allows very easy sharing: if we wanted to sync our copy with
+    a centralised repository, we can simply compare our hashed file listings
+    per backup and see where they diverge.</p>
+  <p> Note: this is the first version iteration that you can't do manually.
+    In order to have the most efficient solution, we have to rely on a program
+    doing this for us.</p>
+</section>
+<section class="slide">
+<h2> Hashing VCS: Backup and Restoration</h2>
+    <p>We would like to implement a programme to: </p>
+    <ul>
+      <li>Verify the validity of the backups:</p>
+          <ul>
+          <li><p>Hash every file in the backup directory and make sure its hash matches its filename.</p></li>
+          <li><p>Make sure every hash listed in the catalogue is present in the backup directory.</p></li>
+          </ul>
+      </li>
+      <li class=slide><p> Allow you to backup multiple versions of
+      your code using the following process: </p>
+        <ul>
+            <li><p> Hash all the files in your directory.</p></li>
+            <li><p> Create a catalogue which pairs filenames with their
+            hashes - this forms the record of the backup.</p></li>
+            <li><p> Backup all files whose hashes aren't already present
+            in the backup folder. To make this easier, when backing up make the
+            filename the hash.</p></li>
+        </ul></li>
+    <li class=slide><p> Restore your code from one of your backups by:</p>
+    <ul>
+        <li><p> Clear the working directory</p></li>
+        <li><p> Loading the catalogue of the relevant backup</p></li>
+        <li><p> Copy the files whose hashes are listed in the
+        catalogue into working directory</p></li>
+    </ul></li>
+</ul>
+</section>
+
+<section class="slide">
+<h2>Hashing VCS Implementation: Part I</h2> 
+<div class="highlight"><pre>
+    <span class="k">def</span> <span class="nf">backup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># ... check that the repo exists ... </span>
+        <span class="n">backup_no</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_backups</span><span class="p">())</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c"># Hash things and checking if we have them</span>
+        <span class="n">existing</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contents_path</span><span class="p">))</span>
+        <span class="n">current_files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">directory_structure</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">dirname</span><span class="p">,</span><span class="n">subdirs</span><span class="p">,</span><span class="n">fnames</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">):</span>
+            <span class="c"># Let&#39;s not recurse into .hfk</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">backup_path</span> <span class="ow">in</span> <span class="n">subdirs</span><span class="p">:</span>
+                <span class="n">subdirs</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backup_path</span><span class="p">)</span>
+            <span class="c">#grab hash of files</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fnames</span><span class="p">:</span>
+                <span class="n">current_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span><span class="n">f</span><span class="p">))</span>
+            <span class="c"># store the directory structure</span>
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">subdirs</span><span class="p">:</span>
+                <span class="n">directory_structure</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span><span class="n">d</span><span class="p">))</span>
+        <span class="n">pairs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">f</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">careful_hash</span><span class="p">(</span><span class="n">f</span><span class="p">))</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">current_files</span><span class="p">]</span>
+        <span class="c"># Let&#39;s create the catalogue file first, a simple dump of pairs</span>
+        <span class="n">catalogue</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">revisions_path</span><span class="p">,</span><span class="n">backup_no</span><span class="p">),</span><span class="s">&quot;w&quot;</span><span class="p">)</span>
+        <span class="n">catalogue</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s">&#39; &#39;</span><span class="o">+</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">]))</span>
+        <span class="n">catalogue</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="c"># and we need to dump the dir structure</span>
+        <span class="n">structure</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">revisions_path</span><span class="p">,</span><span class="n">backup_no</span><span class="o">+</span><span class="s">&quot;d&quot;</span><span class="p">),</span><span class="s">&quot;w&quot;</span><span class="p">)</span>
+        <span class="n">structure</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory_structure</span><span class="p">))</span>
+        <span class="n">structure</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="c"># Copy accross all the files listed in pairs but not currently in files/</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">fle</span><span class="p">,</span><span class="n">hsh</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">hsh</span> <span class="ow">in</span> <span class="n">existing</span><span class="p">:</span>
+                <span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">fle</span><span class="p">,</span><span class="n">hsh</span><span class="p">))</span>
+                <span class="k">print</span><span class="p">(</span><span class="s">&quot;--&gt; &quot;</span><span class="o">+</span><span class="n">fle</span><span class="o">+</span><span class="s">&quot; is new or has changed, storing&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">files</span> <span class="o">==</span> <span class="p">[]:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;No changes, bailing.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="n">vc</span><span class="o">.</span><span class="n">cp</span><span class="p">(</span><span class="n">files</span><span class="p">,</span><span class="s">&quot;.&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">contents_path</span><span class="p">)</span>
+        
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index_path</span><span class="p">,</span><span class="s">&quot;a&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s">;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">backup_no</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())))</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</pre></div>
+</section>
+
+<section class="slide">
+  <h2>Hashing VCS Implementation: Part II</h2>
+  <div class="highlight">
+  <pre>
+     <span class="k">def</span> <span class="nf">restore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">revision</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="c"># ... validate repo ...</span>
+          
+        <span class="c"># If -1, find the last revision</span>
+        <span class="k">if</span> <span class="n">revision</span><span class="o">==-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">revision</span><span class="o">==</span><span class="nb">len</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index_path</span><span class="p">,</span><span class="s">&quot;r&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">))</span>
+
+        <span class="c"># pull up the catalogue of files and directory structure files</span>
+        <span class="n">catalogue</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">revisions_path</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">revision</span><span class="p">))</span>
+        <span class="n">structure</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">revisions_path</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">revision</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;d&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">catalogue</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">structure</span><span class="p">)):</span>
+            <span class="k">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no_existing_backup</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="c"># remove all files in the current dir</span>
+        <span class="n">del_files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">)</span>
+        <span class="n">del_files</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backup_path</span><span class="p">)</span>
+        <span class="n">vc</span><span class="o">.</span><span class="n">rm</span><span class="p">(</span><span class="n">del_files</span><span class="p">,</span> <span class="s">&quot;.&quot;</span><span class="p">)</span>
+
+        <span class="c"># rebuild structure from the file</span>
+        <span class="n">dirfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+        <span class="n">dirs</span> <span class="o">=</span> <span class="n">dirfile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="n">dirfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dirs</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+        <span class="c"># generate pairs of files and hashes (actually file names in files/)</span>
+        <span class="n">catfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">catalogue</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="p">[(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">catfile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)]]</span>
+        <span class="n">catfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        
+        <span class="c"># simply copy them to the current directory</span>
+        <span class="n">vc</span><span class="o">.</span><span class="n">cp</span><span class="p">(</span><span class="n">files</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">contents_path</span><span class="p">,</span><span class="s">&quot;.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+  </pre></div>
+</section>
+
+<section class="slide">
+<h2>That's all folks!</h2>
+<p>That about covers the finer details of implementing a VCS that hashes files, naturally implementing  the mysterious vc class and validating the repo are left as an
+  exercise to the reader.</p>
+<p>Where to from here?
+<p>Where we go from here depends on how we want to answer the 
+question depends entirely on how we answer the question "where is the master 
+              repository located?". That is, if it resides only on some centralised 
+              server then we have invented CVS (centralised version control system), but if everyone is free to keep a 
+              copy anywhere, then we have created a DVCS (distributed version control system).</p>
+</section>
+
+
+<section class="slide">
+<h2> Centralised VC's </h2>
+<p>CVS, Subversion (as used by Amazon) and co.</p>
+<ul>
+
+  <li> <p>Centralised version control systems all have, as their defining 
+              characteristic, the master copy containing all revision information 
+              is located only on the master server on only one machine. Thus, all 
+              developers must commit to and pull from it. This introduces a 
+              distinct heirarchy of repositories: the central repository is official one, any code that is on your  machine or not in that repository isn't official.</p> </li>  
+  <li> <p>The implication of such a system is that anyone who has the data does 
+              not actually have the repository, they merely have a copy of the then 
+              current version. Thus, in order to acquire past versions and 
+              effectively track changes and information one need necessarily be 
+              online and connected to the server </p> </li>  
+  <li> <p> Finally, most centralised services make it difficult to do
+  tasks like branching (covered later).</p> </li>  
+</ul>
+</section>
+
+<section class="slide">
+<h2> Distributed VC's</h2>
+<p>
+We'll be focusing on git here, but note that there are a number of different
+distributed VCs, such as Darcs and Mecurial. </p>
+<ul>
+  <li> <p>Decentralised, this means that while there might be centralised
+  repositories, when we get the data from that repository we don't get a
+  version, we get the whole repository. This is essentially the model we've developed.</p> </li>  
+  <li><p> Thus there is no technically privledged repository: anyone
+  who gets a copy of a repo has an identical copy to everyone else</p> </li>  
+  <li><p>The way git does this is by storing the entire repository, with all
+  its backups, hashed in a .git folder stored in the working directory, very
+  much like our hashed VCS</p></li>
+</ul>
+</section>
+
+<section class="slide">
+<h2> Internal structure of git </h2>
+<p> In fact, git has a lot in common with our little toy hashed vcs structure-wise.
+This isn't a course on the interals of git, but to give a brief overview:</p>
+<ul>
+    <li>It stores all its objects (including files) in one folder with their
+    filenames as their SHA1 hashes </li>
+    <li> Every time you make a backup, it generates a series of trees, each representing a folder
+    being backed up by listing the pairs of the contents of each file along
+    with their hash (like our catalogues structure)</li>
+    <li> A backup is stored as a commit file which points to the tree
+    representing the working directory at the time of backup (exactly like our
+    catelogue files)</li>
+    <li> Commits are then linked together to provide a history of the
+    repository. </li>
+</ul>
+
+Although we will not be concerning ourselves with anything finer than the structure of commits from
+this point onward, it is worth noting that in three simple
+iterations we came up with something that stores data similar to one of the
+most popular SCM systems at the moment, an SCM that some call complex!
+</section>
+
+<section class="slide">
+<h2>So, what have we achieved?</h2>
+    <li><p>We've developed a toy VCS from scratch teaching us a
+    couple of important lessons: </p></li>
+    <ul>
+        <li class=slide><p>Doing VCS manually is as silly as it's inefficient and
+        very much lacking in essential features compared to an actual SCM
+        system</p></li>
+        <li class=slide><p>Every VCS is simply an approach to provide a common
+        feature set, they just go about it in a number of different ways.</p></li>
+        <li class=slide><p>If we didn't have to waste so much time doing CS
+        assignments, we probably would have come up with git by ourselves!</p></li>
+    </ul>
+    <li class=slide><p>We've learnt about the differnce between centralised and
+    distributed version control</p></li>
+</ul>
+</section>
+<!--
+Loose outline of content for Git101
+        staging files: 
+            Model the book goes with: demonstrate what, then why, then how
+            commands: add, status, .gitignore, diff, git rm/mv, commit, commit
+            -am, commit -amend, restructuring staging through commands shown in
+            status
+            http://git-scm.com/figures/18333fig0201-tn.png
+        remotes
+            clone (note: not checkout like subversion)
+            push/pull
+        branching:
+            checkout
+            branch
+                -merged
+                -no-merged
+                -d
+            ~remote branches, pushing and removing remote branchesa
+            rebasing and merging
+
+-->
+<section class="slide">
+	<h1>Git 101</h1>
+</section>
+
+<section class="slide">
+<h2> Scope of the workshop </h2>
+    <p>We want to get you started using git ASAP. So, in this section we're
+    going to cover: </p>
+    <ul>
+        <li>The basics of git</li>
+        <li>How to use git on a local machine to enchance your workflow</li>
+        <li>How to use git to colloborate with small groups on Github</li>
+    </ul>
+    <p>What we won't cover:</p>
+    <ul>
+        <li>the intricate internal structure of git (you don't need it to use git)</li>
+        <li>every single feature (this is a primer, not a man page)</li>
+        <li>tagging (useful but we have a full plate)</li>
+        <li>full remote management (again useful, but you don't need it to
+        start using git)</li>
+    </ul>
+</section>
+<section class="slide">
+<h2> Getting a new repository </h2>
+<p> There are two main ways to get a repository on your system: you can either
+start a new one in the current folder or you can fetch an already established
+one from a remote source.</p>
+<div class=git_con>
+<span class=git_left> <p>Create a new respository</p></span>
+<span class=git_right> 
+        <pre class=simple_console>$ git init </pre>
+</span>
+</div>
+<div class=git_con>
+<span class=git_left> <p> Make a directory called project, go into it and start a new git repository in
+it.</p> </span>
+
+<span class=git_right> 
+        <pre class=simple_console>$ cd ~
+$ mkdir project
+$ cd project
+$ git init</pre>
+</span>
+</div>
+<div class=git_con>
+<span class=git_right><pre class=simple_console>$ git clone [url] [location:
+default repo-name]</pre></span>
+<span class=git_left><p>Clone a repository </p></span>
+</div>
+<div class=git_con>
+<span class=git_left><p>Clone the repository grit into a new folder called
+grit</p></span>
+<span class=git_right><pre class=simple_console>$ git clone
+git://github.com/schacon/grit.git</pre></span>
+</div>
+</section>
+
+<section class="slide">
+<h2> Staging: tracked and untracked </h2>
+<p> Git has two notions of file monitoring: 
+              tracked and untracked. Untracked files are precisely those about 
+              which git does not care and which will not be incorporated into any 
+              commits or revisions. Tracked files are those that git concerns 
+              itself with. To tell git to track a file, we use git add <console>. </p>
+
+<p>
+The file is now said to be staged for a commit, that is, git has 
+              noted that there are some changes in the file which are not reflected 
+              in the current state of the repo up to the last commit and is 
+              prepared to record these changes</p>
+
+<p> When staging a file, In particular, git hashes it, compares its hash to the manifest and 
+              decides what, if anything, is new about this file
+
+<p>There are a number of reasons why you'd like this level of granularity, e.g. not
+commiting large binary files that are automatically created when compiling or
+wanting to have some testing data you don't want added to the whole folder.</p>
+
+<div class=git_con>
+<span class=git_left>
+<p> In order to find out more about the files in your repository, type in git
+status. It'll give you the files and directories aren't yet tracked and a
+reminder of how to get them to be tracked.</p>
+</span>
+<span class=git_right><pre class=simple_console>
+$ git status
+# On branch master
+#
+# Untracked files:
+#   test.file
+</pre></span>
+</div>
+<div class=git_con>
+<span class=git_left>
+<p> To stage a file, we use git add</p>
+</span>
+<span class=git_right><pre class=simple_console>
+$ git status
+# On branch master
+#
+# Untracked files:
+#   test.file
+$ git add test.file
+$ git status
+# On branch master
+# Changes to be committed:
+#   new file:   test.file
+</pre></span>
+</div>
+</section>
+<!-- Get console working inline -->
+<section class="slide">
+<h2> Commit: how to make snapshots </h2>
+<p>
+Once all the relevant files have been staged what remains is to tell
+git that we are ready to bundle up all the changes we have made into
+one package - a commit.</p>
+<p>
+This can be likened to taking a discrete snapshot of the state of the
+repo and storing it, so that at any point in the future we may go back
+and examine how things were, or branch from a particular state of the
+repository and so on. This is the core feature of any VCS.</p>
+
+<p>When taking such a snapshot, we must provide git with a commit message.
+This message outlines the reasons for capturing this particular stage,
+and any relevant changes that have taken place since the last one.</p>
+
+<p>To do this, we issue git with the 'git commit' command. If there are
+no staged files, git will not make a commit. If there are, then git
+notes this, and prompts for a message (optionally passed via the -m
+flag).</p>
+
+<p>Committing in a repo causes all staged files to return to being merely
+tracked and a subsequent git status will report no changes of the files
+staged.</p>
+<div>
+<pre>
+$ git status
+[ ... ]
+# Changes to be committed:
+#       new file:   file1
+[ ... ]
+$ git commit -m "Added file1 to the repo"
+[master (root-commit) e71f65b] Added file1 to the repo
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 file1
+</pre>
+</div>
+
+<p>Commits are used to document important changes in the repo, not just
+on the file level but also in so far as branching and merging are
+concerned.</p>
+
+<p> Commit guidelines</p>
+<ul>
+    <li> no whitespace at the start or end </li>
+    <li> should be logically distinct: every commit must do something separate
+    (rebase if necessary before pushing)</li>
+    <li> Short (50 chars or less) summary of changes on first line followed by
+    a blank line and longer explanation if neccessary.</li>
+</section>
+
+<section id=git_states_slide class="slide">
+<h2> Modified and Unmodified files </h2>
+<p> We have two last states you'll see if you look at a git status: modified and unmodified. A modified file
+has changes that aren't recorded in a past snapshot of the repository while a
+unmodified file has no changes that haven't been recored in a snapshot. To commit all modified files, simple plonk git commit -a in.</p>
+
+<p>Let's tie all of these states together:</p>
+<div class=left>
+    <ul>
+        <li id=state_start_repo class=slide>When you start a repository, all
+        files are untracked.</li>
+        <li id=state_stage_files class=slide>We then stage some files...</li>
+        <li id=state_commit_files class=slide>and then we commit. Now some files are tracked and unmodified while
+        some are untracked. </li>
+        <li id=state_modify_files class=slide>We then work a bit on the project, modifying some of the files</li>
+        <li id=state_stage_modified class=slide>We then decide to stage all the modified files along with some of
+        the unmodified files.</li>
+        <li id=state_commit_modified class=slide>And then commit them all</li>
+    </ul>
+</div>
+<div class=right>
+    <div id=git_states_div></div>
+    <pre id=git_console_states></pre>
+</div>
+</section>
+
+<section class=slide>
+<h2>Now that you've got the basics</h2>
+<p>... we'll take a quick look at some of the commands and use cases
+  you'll be needing in a standard work environment. In particular,
+  we'll examine how to<ul>    
+    <li>Move/Rename/Remove files</li>
+    <li>Tell git to ignore clutter files</li>
+    <li>View what has changed between commits</li>
+    <li>Automagically commit everything that has changed</li>
+    <li>Amend a faulty commit</li>
+    <li>Clone/Push/Pull</li>
+</ul></p>
+</section>
+
+<section class=slide>
+  <h2>Tracking moving and deletion</h2>
+<p> Clearly, simply deleting or moving a file would be bad for others
+  trying to use your repo. While git is fairly clever at working at whether you've moved or deleted a file, it can sometimes fail causing headaches for others trying to make sense of the repo's history</p>
+
+<p> We should tell git to keep track of these
+  actions so that it knows when a file is out of the repo or has
+  changed name/path. To do this, we call git mv when moving a tracked file and git rm when we want to delete one </p>
+</section>
+
+<section class="slide">
+<h2>Ignorance is bliss</h2>
+<p> Sometimes compiling files in the working directory can generate a
+  whole bunch of 'garbage' (*.o, *.hi, *.pyc ...) which you don't want
+  to feature in the repo (after all, everyone can build things for
+  themselves). Perhaps there are just some files which you are using
+  for testing, but which shouldn't be registered as untracked in any
+  event.</p>
+<span class=git_con>
+  <pre class=simple_console>
+    $ ls
+    junk.o amazing.hi debug.pyc temporary_db.sql [...]
+    $ git status
+    # On branch master
+    # Untracked files:
+    #   (use "git add <file>..." to include in what will be committed)
+    #
+    #       junk.o amazing.hi debug.pyc temporary_db.sql [...]
+    nothing added to commit but untracked files present (use "git add"
+    to track)
+</pre></span>
+</section>
+
+<section class=slide>
+<h2>Ignorance is bliss</h2>
+<p>How do we get git to ensure that such files are forever untracked
+  and invisible to it?</p>
+<p class=slide>Why, gitignore is the answer! In specific, there are two files that
+  are of importance: '.git/info/exclude' and '.gitignore'</p>
+<p class=slide>In particular, the exclude file tells git to apply those
+  rules to any file in the tree, anywhere, whereas .gitignore applies
+  only to the directory in which it is located (and its subdirs).</p>
+<span class=slide>
+<p>There is a lot to be said about the pattern matching
+  capabilites (see 'git help gitignore') but for now, learn by example
+  <span class=git_con>
+    <pre class=simple_console>
+      $ cat Docs/.gitignore
+      # We don't want to track any of the generated html files
+      *.html
+      # Execpt ilikecats.html, which we do update by hand
+      !ilikecats.html
+
+      $ cat .git/info/exclude
+      # No object files
+      *.[od]
+      # and stop python from polluting our world
+      *.pyc
+</pre></span></p></span></section>
+
+<section class=slide>
+<h2>What difference does it make?</h2>
+<p>Now that we are only tracking files we care about, our structure is
+  a lot cleaner. But suppose a commit is made and you patch up some
+  files, forget to commit and come back a week later (because it is an
+  indie project) and you cannot remember what you changed and
+  where.</p>
+<p class=slide>Git to the rescue! 'git diff &lt;commit&gt; [&lt;commit&gt;]' is
+  what you seek, it will give you a diff between the current
+  tracked changes and a particular commit or between any two such
+  commits</p>
+<span class=slide>
+ <span class=git_con>
+   <pre class=simple_console>
+     $ emacs cars
+     $ git add cars
+     $ emacs cars
+     $ git diff
+     diff --git a/cars b/cars
+     index 72a265c..d66ec78 100644
+     --- a/cars
+     +++ b/cars
+     @@ -1 +1,2 @@
+     This is highly irrelevant
+     +Now this is more relevant
+ </pre></span>
+</span>
+<p class=slide> Although this can be somewhat hard to read, the basic idea here is
+  that the contents of 'cars' changed by the removal of one line, and
+  the addition of another, where the line that was removed is
+  displayed first and the new line is prefixed by +.</p>
+</section>
+
+<section class=slide>
+<h2>History is not set in stone</h2>
+<p>The scenario is easy to grasp and probably more common than we dare
+  concede: You've just completed all your work, everything is working
+  and now it's time to roll out the new revision. You git add your
+  files and commit. Boom. Time to relax. A quick check of 'git log
+  --summary' and you notice something. Oh no, you've left out
+  'critical_file.c'. Oh dear.</p>
+<p class=slide>Perhaps you could just add another commit to say 'I
+  forgot these files, um, sorry' but this isn't always desirable and
+  it may annoy your repo-controlling overlords (see
+  later). Furthermore, your mistake could have been as trivial as an
+  incomplete commit message -- what then? To that
+  end, git offers you recourse through 'git commit --amend'.</p>
+<p class=slide>Put simply, this command simply re-purposes the last
+  commit to include all staged files and allows you to include
+  potentially critical information in the commit message.</p>
+<span class=slide>
+ <span class=git_con>
+   <pre class=simple_console>
+     $ git commit -m 'It's all done now'
+     [master a99495e] Here is everything
+     1 file changed, 1 insertion(+)
+     create mode 100644 even_moar
+     $ git add extra
+     $ git commit --amend -m 'Here is everything for real'
+     [master 1c85d3b] Here is everything, for real this time
+     2 files changed, 2 insertions(+)
+     create mode 100644 even_moar
+     create mode 100644 extra
+     $ git log --summary
+     commit 1c85d3b626707a9ded2250f99c183db0bfd2cf63
+     Author: Me <me@you.com>
+     Date:   Sat Mar 23 14:42:03 2013 +0200
+
+     Here is everything, for real this time
+
+     create mode 100644 even_moar
+     create mode 100644 extra
+
+     commit 8d29a28ca46ee8d315ceac50ad1e5d91e9de6112
+     Author: Me <me@you.com>
+     Date:   Sat Mar 23 13:13:10 2013 +0200
+
+     All the things
+
+     create mode 100644 cars
+     delete mode 100644 felines
+     
+     [ ... ]
+   </pre></span></span>
+<p class=slide>Note that there is no trace of the previous, erroneous
+  commit - you have rewritten history. If you do not provide a message
+  for the commit, then git defaults to using the previous commit
+  message. For all intents and purposes, our little slip-up did not happen.
+</p></section>
+
+<section class=slide>
+<h2>Attack of the clones</h2>
+<p>As mentioned earlier, cloning a repo is one of the inherent
+  strengths that a DVCS has. Anyone who clones a repo has it in its
+  entirety, and can review and meddle with all the changes made to it
+  by anyone.</p>
+<p class=slide>Suppose now that you have successfully cloned a repo,
+  and using the above-discussed arsenal, worked on it and have a bunch
+  of commits done and ready to be unleashed unto the world.</p>
+<p class=slide>Enter git push. It takes your repo and, assuming you
+  have rights to the server, puts your changes on the server.</p>
+<span class=slide>
+ <span class=git_con>
+   <pre class=simple_console>
+     $ git commit -m "It's all done now."
+     [master a99495e] It's all done now
+     1 file changed, 1 insertion(+)
+     create mode 100644 final_piece
+     $ git push
+     [ ... ]
+     Counting objects: 18, done.
+     Delta compression using up to 4 threads.
+     Compressing objects: 100% (11/11), done.
+     Writing objects: 100% (11/11), 6.53 KiB, done.
+     Total 11 (delta 8), reused 0 (delta 0)
+     To git@github.com:me/you.git
+       9941913..c591759  master -> master
+ </pre></span>
+ <p class=slide>What could possibly go wrong?<ul>
+     <li class=slide>You do not have push rights - git will tell you politely</li>
+     <li class=slide>Your local copy is out-of-sync with the
+       server. To rectify this see pulling and merging.</li>
+ </ul></p>
+</section>
+
+<section class=slide>
+<h2>Pulling your weight</h2>
+<p>There are two important times when you would need your repo to
+  catch-up to the server/master repo.<ul>
+    <li class=slide>Important work upon which you depend has occured
+      elsewhere and you wish to be up-to-date with it</li>
+    <li class=slide>You have done some work and wish to push your
+    changes but cannot because other changes have occured elsewhere
+      and are now on the server</li></ul></p>
+<p class=slide> The first case is easy to handle. Merely run 'git
+  pull' and all the changes will be downloaded to your repo and merged
+  (though this is not guaranteed to be problem free)</p>
+<p class=slide>The second case begins in the same way, but comes with
+  the high probability that you will need to manually merge files. In
+  particular, when you pull because you wish to push your changes but
+  cannot, all of the changes you do not have are downloaded into your
+  local repo. In fact, there will be two 'branches' (think of them as
+  concurrently existing versions of the content) sitting in your local
+  repo.</p>
+<p class=slide>If you wish to unify your changes with the changes from
+  elsewhere - and thus be able to push - you must merge these two
+  branches (more on this later). In principle, you need to tell git to
+  combine the work done elsewhere with your current work and commit
+  that change to your repo so that there is only one version which
+  represents the work done on both.</p>
+  <span class=slide>
+    <span class=git_con>
+      <pre class=simple_console>
+        $ git pull
+        [ ... ]
+        $ git commit -m "Merge of work from local/master and origin/master"
+        $ git push
+  </pre></span></span>
+</section>
+
+<section class=slide>
+<h2>While we're on the topic</h2>
+<p>Branches are a fundamental component of a successful git
+  workflow. They allow you to simultaneosly persue different avenues
+  and maintain concurrent, incompatible or decidedly separate versions
+  of your content (say, a testing and stable version) while being able
+  to merge the one into the other when appropriate.</p>
+<p class=slide>It has been suggestively named, and so should be
+  imagined as a literal branch in the timeline of changes that runs
+  concurrently.</p>
+<p class=slide>The basic tools of the trade for branching
+  are <ul><li class=slide>git branch [&lt;new_branch_name&gt;]</li>
+    <li class=slide>git checkout &lt;branch&gt;</li>
+    <li class=slide>git merge &lt;branch&gt;</li></ul></p>
+</section>
+
+<section class=slide>
+<h2>Branch</h2>
+<p>The first port of call is that of 'git branch'</p>
+  <span class=slide>
+    <span class=git_con>
+      <pre class=simple_console>
+        $ git branch
+        * master
+  </pre></span></span>
+<p class=slide>Without any arguments, it merely informs you of all the
+  branches contained in the repo. However, if we provide it with an
+  argument, it forms a branch in the timeline of changes under that
+  name</p>
+<p class=slide>In actuality, virtually everything you would like to
+  achieve in so far as manipulating branches is concenrned, is done
+  through the branch command:<ul>
+    <li class=slide>Rename the current branch: git branch -m &lt;name&gt;</li>
+    <li class=slide>Safe delete the current branch: git branch -d &lt;branch&gt;
+      <ul>
+        <li class=slide>Git considers it safe to remove a branch only
+        when there are no outstanding merges. That is, only if its
+          content exists elsewhere.</li>
+        <li class=slide>You'll see a polite error message informing
+          you that there is content yet to be merged</li>
+    </ul></li>
+    <li class=slide>Force delete (ye be warned): git branch -D &lt;branch&gt;</li>
+    <li class=slide>Gain insight into the structure and coherence of
+    your branches:<ul>
+        <li class=slide>You may wish to know precisely which branches
+        are in-step with the branch you are currently working on
+        (those that do not depend on changes which have not been made
+        in your branch) or which branches are within reach of a
+          particular commit. To this end: git branch --merged
+        [&lt;commit&gt;]</li>
+        <li class=slide>The complement of this piece of information is
+        oftentimes also useful (when merging, care needs to be taken
+        with all branches which are not so aligned), thus there is:
+          git branch --no-merged</li></ul></li></ul></p>
+</section>
+
+<section class=slide>
+<h2>Checkout</h2>
+<p>Using 'git checkout' we can effectively change universes and work
+  within the safe environment of our branch. Here, any changes that we
+  make and commit effect only this branch and not our original
+  timeline.</p>
+<p class=slide>To that end, we are free to muck things up, perfect
+  concepts or just generally persue other avenues or test features
+  before they become part of the main body</p>
+<p class=slide>Git takes care of managing all the relevant files and
+  directories for us, if something is part of master, and we checkout
+  to experimental, it will no longer appear in a directory
+  listing.</p>
+<p class=slide>We may maintain arbitrarily many distinct working
+  environments in such a set-up</p>
+</section>
+
+<section class=slide>
+<h2>Merge</h2>
+<p>Possibly the most complex (not <i>complicated</i>) part of managing
+  a git repo: combining branches.</p>
+<p class=slide>The basic command is 'git merge &lt;branch&gt;'. This
+  will merge 'branch' into the current branch and automagically settle
+  some rather complex under-the-hood things.
+<p class=slide>There are two scenarios: a fast-forward merge and a
+  three-way merge; git will do different things in each case. The only
+  thing to take away from this is, if you want a commit to be
+  generated every time you merge use the '--no-ff' flag when
+  merging</p>
+ <span class=slide>
+    <span class=git_con>
+      <pre class=simple_console>
+        $ git merge experiments
+        [ ... ]
+        Auto-merging slides.html
+        CONFLICT (content): Merge conflict in slides.html
+        Automatic merge failed; fix conflicts and then commit the
+        result.
+        $ git status
+        [ ... ]
+        # Both modified: slides.html
+ </pre></span></span>
+ <p class=slide>Sometimes this may happen to you, when you pull or
+ when you merge. All git is saying is that the branches your are
+ playing with have made potentially conflicting changes to the same
+   file and it's not sure how to proceed.</p>
+ <p class=slide>At this point, you should fire up your favourite
+ editor and manually check the file in question. Git will neatly mark
+ which bits came from what branch and it's up to you to choose the
+ right ones.
+ </p><p class=slide>Once done, commit your changes and the branches
+    have been successfully merged!</p>
+</section>
+
+<section class=slide>
+<h2>Altogether now</h2>
+<div class=left><ul>
+  <li class=slide id=branch_start_repo>Before we branch, we have some
+  timeline representing the state of the repo</li>
+  <li class=slide id=branch_first_branch>Branching introduces an
+  alternate stream in which we may work, but does not move the head
+    pointer to this state</li>
+  <li class=slide id=branch_checkout_branch>By calling checkout we
+  effectively switch to our parallel universe, git takes care of all
+    the files which do or do not exist and the heead pointer is
+  moved</li>
+  <li class=slide id=branch_commit>We may then freely work in this
+    branch without fear of upsetting our other work</li>
+  <li class=slide id=branch_merge>If we wish to merge the features in
+    the experimental branch, we switch to our main branch and call git
+    merge</li>
+  <li class=slide id=branch_delete>Now that we have merged our
+    features, we may safely delete the experimental branch without git
+    complaining. This is known as a fast forward merge as the master is an ancestor of the branch being merged which means we can simply move it up.</li>
+</ul></div>
+<div class=right>
+    <div id=git_branch_tree_div></div>
+</div>
+</section>
+
+<section class="slide">
+<h2> Merging: a visual example </h2>
+<div class=left><ul>
+  <li class=slide id=merge_start_repo>Here we have a basic branch structure similar to what we have before.</li>
+  <li class=slide id=merge_branch>We decide we want to add some experimental features, so we add a testing branch and switch to it.</li>
+  <li class=slide id=merge_commit_branch>We then work on it a bit</li>
+  <li class=slide id=merge_checkout_master>Suddenly, our supervisor demands we fix a bug in the master branch, so we check that out and do some work on it.  </li>
+  <li class=slide> To try and placate our testy supervisor, we decide to merge some of the awesome testing features into our master branch, giving us a repo that looks like...</li>
+  <li class=slide id=merge_merge>...this, with the merge of the two branches becoming its own commit. This is called a three way merge and it is made based on the latest common ancestor the branches being merged share.</li>
+</ul></div>
+<div class=right>
+    <div id=git_merge_tree_div></div>
+</div>
+</section>
+
+<section class=slide>
+<h2>Overall then</h2>
+<p> We have seen how to use the basic building of git to create a repo
+  and populate it, clone one and meddle in it, and push and pull
+  changes</p>
+<p class=slide>On top of this structure, we imposed a higher level
+  wherein all of this could easily happen inside a branch of project
+  and happily remain disjoint until such a time that it was ready to
+  be merged with the main stream</p>
+<p class=slide>All that remains is to chat about the most interesting
+  concept, rebase, before a brief foray into workflow and actually <i>using</i> git.
+</section>
+
+<section class=slide>
+<h2>Rebase or why you would opaquely change the past</h2>
+<p>Suppose the following situation occurs:<ul>
+    <li class=slide>You branch your a remote repo and happily hack
+      away at it</li>
+    <li class=slide>Upstream changes occur, and you decide to pull
+    them in. 'No worries', you think, 'I have all my work in another
+      branch. I can pull without conflict'. You do so.</li>
+    <li class=slide>There are some really interesting changes made in
+    the master branch, and you think to yourself that it would be
+      wonderful to have those in your branch.</li>
+    <li class=slide>How could you do this? Well, you could perform a
+    (three-way) merge between your branch and the master one, generate
+      a superfluous commit in the timeline and then proceed.</li>
+</ul></p>
+<p class=slide>Surely there is a better way to do this? Rebase is the
+  'better' way. Instead of that last step, git rebase &lt;base&gt;
+  (where base is anything that would pass-up as a reference to a
+  particular point in the timeline of the project) takes your entire
+  branch, subtly changes the files within it to be up-to-speed with
+  the desired branch and then applies your commits to those files and
+  finally pretends as though the whole thing never
+  happened. Yes. That's right.</p>
+<p class=slide>There will be no trace whatsoever that you branched off
+  at some earlier point then current records indicate and your branch
+  will be ahead of the branch from which it came, generating a nice,
+  linear flow.</p>
+<p class=slide>Rebasing is your way of saying 'Git, I want my branch
+  to be based on the work that everyone else has already done to
+  branch x'</p></section>
+
+<section class="slide">
+<h2> Rebasing: a visual example </h2>
+<div class=left><ul>
+  <li class=slide id=rebase_start_repo>Here we have a similar situation to the
+  previous merging example: we have two branches with changes that we want to
+  put together. If we don't mind complexity, merging is a way to go. But if we
+  want a nice linear order, we can do something a bit different</li>
+  <li class=slide>We're going to perform a rebase of Test onto Master:</li>
+  <li class=slide id=rebase_rebase>Here we can see that instead of having a
+  messy structure as before, we have one linear line. Note that c4' is a
+  completely different commit than c4; it's c4 with all the changes from c3
+  patched onto it. </li>
+  <li class=slide id=rebase_update>We can now just do a fast forward
+  merge on master and we're done.</li>
+</ul></div>
+<div class=right>
+    <div id=git_rebase_tree_div></div>
+</div>
+</section>
+
+<section class="slide">
+<h2> Workflow </h2>
+<p> Since git is distributed, there's a multitude of different workflows. A
+good outline of these is <a
+    href=http://git-scm.com/book/en/Distributed-Git>Pro Git by Scott Chacon</a>
+available free online at the link.</p>
+
+<p> We'll just cover briefly the model that is commonly used for small teams.</p>
+
+<ul>
+    <li> You all commit to a central repository with the master branch being a
+    stable version</li>
+    <li> However, all work you do for a feature is on a separate branch. For
+    example, if you were working on a game there'd be a branch for adding AI, a
+    branch for working on game logic, another for collision detection and so
+    on.</li>
+    <li> When a feature is complete, you notify the branch manager that you
+    want to merge. They then test it and, if satisfied, merge it into the main
+    branch which then becomes the base for all other work.</li>
+    <li> If when testing a bug appears in the master branch, you create a bug
+    fix branch (e.g. hotfix1), fix the problem and then merge the changes back
+    in.</li>
+</ul>
+
+<p>The advantages of this model is that you always have a clear division between
+future features and currently functionality giving you the flexibility to try
+new things without having the uncertainty and instability that having everyone
+changing the main branch would create.</p>
+
+<p>Often this model is a bit more complex in that every developer uses a
+different repository rather than branch, but the general pattern is the same.</p>
+</section>
+
+</section>
+<section class="slide">
+<h2>Congratulations!  </h2>
+<p>You now have a decent idea of how git works. For the rest of the workshop we're going to practice using it.</p>
+
+<ul>
+    <li> First, you're going to do some individual tasks in order to get some
+    fluency in using git.</li>
+    <li> Everyone is then going to get into small groups and get used to
+    colloborating using git!</li>
+</ul>
+</section>
+<section class="slide">
+	<h1>Using git colloboratively</h1>
+</section>
+
+<section class="slide"><h1>Interactive session</h1></section>
+
+<section class="slide">
+  <h2>Your first task</h2>
+  <p>Now that you have some non-zero understanding of git, it's time
+  to put it to the test and actually <i>use</i> git to achieve
+    something.</p>
+<p class="slide"> While the emphasis has been on managing code, git is actually a
+  DVCS where V is for version and not code. Thus, we are going to
+  forgo the coding idea for this exercise.</p>
+<p class="slide"> Your mission, should you choose to accept it, is to: <ul>
+    <li class="slide"> Create a github account if you do not have one already</li>
+    <li class="slide"> Set up a repo for this exercise, call it 'first_test' or some
+    such</li>
+    <li class="slide"> Write a brief <i>html</i> page about using the basic
+      functionality of git</li>
+    <li class="slide"> Use git to facilitate regular revisions of this file and all
+      associated files (pictures, css ...)</li></ul>
+</p>
+<p class="slide"> At the conclusion of the session, pull other people's repos and
+  see if they noted some things you overlooked or visa versa.</p>
+</section>
+
+<section class="slide">
+<h2>Your second task</h2>
+<p>This is the large project of the day. You will be collaborating in
+  groups of three to create something you will ultimately be one of
+  proud or ashamed of in the near future</p>
+<p class="slide"> The emphasis of this exercise is very much a
+  collaborative and distributed workflow. Each member will be
+  tackeling distinct but related parts of the project, and it's vital
+  that the effort is coordinated. However, you will all be working on
+  different machines and so you must make full use of git!</p>
+</section>
+
+<section class="slide">
+<h2>Your second task</h2>
+<p>To make the exercise even more useful, you will be working in the
+  benevolent dictator model.</p>
+<p class="slide">Each group will be assigned a tutor, and they will
+  have access to the repo. You will need to submit patches and push
+  requests to your overlord in order to contribute -- make local
+  branches, stash things, be wise: too many requests can anger your betters!</p>
+</section>
+
+<section class="slide">
+<h2>Your second task</h2>
+<p>'What is this project?' I hear you scream.</p>
+<p class="slide">You will be making a text adventure game.</p>
+<p class="slide">A natural distribution of labour would have one
+  person writing the engine, another the script, and the last working
+  on the interface.</p>
+<p class="slide">What sort of features do we expect?<ul>
+    <li class="slide">Read a script from an external file in some
+    format</li>
+    <li class="slide">Allow for a player inventory, conditional
+    decisions, random events, perhaps even a rudementary way to code
+      while loops in the script, generic enough to play a wide variety of games,
+      perhaps dynamic player statistics or win conditions</li>
+    <li class="slide">Clear and easy to use interface with appropriate
+    information displayed on-screen, help and suggestions easily accessible
+    <li class="slide">A fun example game</li></ul></p>
+<p class="slide">See our <b>example</b></a></p>
+</section>
+<section class=slide>
+<h2> Licence </h2>
+<p>
+<a rel="license"
+href="http://creativecommons.org/licenses/by/3.0/deed.en_GB"><img alt="Creative
+Commons Licence" style="border-width:0"
+src="pics/by.png" /></a><br /><span
+xmlns:dct="http://purl.org/dc/terms/" property="dct:title">devwithGit</span> by
+<a xmlns:cc="http://creativecommons.org/ns#"
+href="https://github.com/steveryb/devwithGit" property="cc:attributionName"
+rel="cc:attributionURL">Steven Rybicki and Tslil Clingman</a> is licensed under
+a <a rel="license"
+href="http://creativecommons.org/licenses/by/3.0/deed.en_GB">Creative Commons
+Attribution 3.0 Unported License</a>.<br />Based on a work at <a
+xmlns:dct="http://purl.org/dc/terms/"
+href="https://github.com/steveryb/devwithGit"
+rel="dct:source">https://github.com/steveryb/devwithGit</a>.
+</p>
+</section>
+</article>
+<!-- End slides. -->
+
+
+<!-- Begin extension snippets. Add or remove as needed. -->
+
+<!-- deck.navigation snippet -->
+<a href="#" class="deck-prev-link" title="Previous">&#8592;</a>
+<a href="#" class="deck-next-link" title="Next">&#8594;</a>
+
+<!-- deck.status snippet -->
+<p class="deck-status">
+	<span class="deck-status-current"></span>
+	/
+	<span class="deck-status-total"></span>
+</p>
+
+<!-- deck.goto snippet -->
+<form action="." method="get" class="goto-form">
+	<label for="goto-slide">Go to slide:</label>
+	<input type="text" name="slidenum" id="goto-slide" list="goto-datalist">
+	<datalist id="goto-datalist"></datalist>
+	<input type="submit" value="Go">
+</form>
+
+<!-- deck.hash snippet -->
+<a href="." title="Permalink to this slide" class="deck-permalink">#</a>
+
+<!-- End extension snippets. -->
+
+
+<!-- Required JS files. -->
+<script src="lib/deckjs/jquery-1.7.2.min.js"></script>
+<script src="lib/deckjs/core/deck.core.js"></script>
+
+<!-- Extension JS files. Add or remove as needed. -->
+<script src="lib/deckjs/core/deck.core.js"></script>
+<script src="lib/deckjs/extensions/hash/deck.hash.js"></script>
+<script src="lib/deckjs/extensions/menu/deck.menu.js"></script>
+<script src="lib/deckjs/extensions/goto/deck.goto.js"></script>
+<script src="lib/deckjs/extensions/status/deck.status.js"></script>
+<script src="lib/deckjs/extensions/navigation/deck.navigation.js"></script>
+<script src="lib/deckjs/extensions/scale/deck.scale.js"></script>
+
+<!-- Initialize the deck. You can put this in an external file if desired. -->
+<script>
+	$(function() {
+		$.deck('.slide');
+            });
+        /* Visualisation data for git states */
+        states = new GitStates(620,400,git_states_div,git_console_states);
+        git_states = {"git_states_slide":0,
+        "state_start_repo":1,
+        "state_stage_files":2,
+        "state_commit_files":3,
+        "state_modify_files":4,
+        "state_stage_modified":5,
+        "state_commit_modified":6}
+    /* Visualisation data for git branching tree */
+        var branch_tree = new
+        GitTree(620,600,git_branch_tree_div,"git_branching_tree_visi");
+        branch_repo = [["c1","","","",""],
+        ["c2","c1","","",""],
+        ["c3","c2","","",""]]
+        var branch_repo_head = [["Master*","c3"]];
+        var branched_repo_head = branch_repo_head.concat([["Branch","c3"]]);
+        var checked_out_head = [["Master","c3"],["Branch*","c3"]];
+        var c_branch_repo =
+        branch_repo.concat([["c4","c3","","",""],["c5","c4","","",""]]);
+        var c_head = [["Master","c3"],["Branch*","c5"]];
+        var merge_head = [["Master","c5"],["Branch*","c5"]];
+        var delete_head = [["Master*","c5"]];
+        var git_branch_states = 
+        {"branch_start_repo":[branch_repo,branch_repo_head],
+        "branch_first_branch":[branch_repo,branched_repo_head],
+        "branch_checkout_branch":[branch_repo,checked_out_head],
+        "branch_commit":[c_branch_repo,c_head],
+        "branch_merge":[c_branch_repo,merge_head],
+        "branch_delete":[c_branch_repo,delete_head]}
+
+        /* Visualisation data for git merging tree */
+        var merge_tree = new
+        GitTree(620,600,git_merge_tree_div,"git_merging_tree_visi");
+        merge_repo = [["c1","","","",""],
+        ["c2","c1","","",""],
+        ["c3","c2","","",""]]
+        var merge_repo_head = [["Master*","c3"]];
+        var c_merge_repo =
+        merge_repo.concat([["c4","c3","","",""],["c5","c4","","",""]]);
+          var merge_head_2 = [["Master","c3"],["Test*","c3"]];
+          var merge_head_3 = [["Master","c3"],["Test*","c5"]];
+          var merge_head_4 = [["Master*","c7"],["Test","c5"]];
+          var merge_head_5 = [["Master*","c8"],["Test","c5"]];
+            var merge_pen_repo =
+            c_merge_repo.concat([["c6","c3","","",""],["c7","c6","","",""]]);
+            var merge_ult_repo = 
+            merge_pen_repo.concat([["c8","c5 c7","","",""]]);
+            var git_merge_states = { 
+          "merge_start_repo":[merge_repo,merge_repo_head],
+          "merge_branch":[merge_repo,merge_head_2],
+          "merge_commit_branch":[c_merge_repo,merge_head_3],
+          "merge_checkout_master":[merge_pen_repo,merge_head_4],
+          "merge_merge":[merge_ult_repo,merge_head_5]}
+
+      /* Visualisations  data for rebase */
+        var rebase_tree = new
+        GitTree(620,600,git_rebase_tree_div,"git_rebasing_tree_visi");
+        var rebase_repo = [["c1","","","",""],
+        ["c2","c1","","",""],
+        ["c3","c2","","",""],
+        ["c4","c2","","",""]];
+        var rebase_head = [["Master","c3"],["Test*","c4"]];
+
+        var rebase_repo_2 = [["c1","","","",""],
+        ["c2","c1","","",""],
+        ["c3","c2","","",""],
+        ["c4'","c3","","",""]];
+        var rebase_head_2 = [["Master","c3"],["Test*","c4'"]];
+        var rebase_head_3 = [["Master*","c4'"],["Test","c4'"]];
+        var git_rebase_states = 
+        {"rebase_start_repo":[rebase_repo,rebase_head],
+          "rebase_rebase":[rebase_repo_2,rebase_head_2],
+          "rebase_update":[rebase_repo_2,rebase_head_3]}
+
+        $(document).bind('deck.change', function(event, from, to) {
+            var $entering = $.deck('getSlide', to);
+            //var $leaving = $.deck('getSlide', from);
+            var id = $entering[0].id
+            if(id in git_states) states.setState(git_states[id]);
+            else if(id in git_branch_states){
+                var data = git_branch_states[id];
+                branch_tree.makeGraph(data[0],data[1])
+            }
+            else if(id in git_merge_states){
+                var data = git_merge_states[id];
+                merge_tree.makeGraph(data[0],data[1])
+            }
+            else if(id in git_rebase_states){
+                var data = git_rebase_states[id];
+                rebase_tree.makeGraph(data[0],data[1])
+            }
+        });
+
+</script>
+</body>
+</html>
+<!--
+
+-->

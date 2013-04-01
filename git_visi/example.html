@@ -1,0 +1,55 @@
+<html>
+<head>
+    <script src="http://d3js.org/d3.v2.min.js?2.9.3"></script>
+    <style>
+    .link {
+        stroke: black;
+    }
+    path.link{
+            fill:none;
+            stroke: black;
+            stroke-width: 4px;
+    }
+    .node text {
+      pointer-events: none;
+      font: 20px sans-serif;
+      color:blue;
+    }
+    </style>
+</head>
+<body>
+<div id="graph" style="float:left"><script type="text/javascript" src="GitTree.js"></script></div>
+<div id="states" style="float:right"><script type="text/javascript" src="GitStates.js"></script></div>
+<div style="float:right"><pre id="console"></pre></div>
+<script type="text/javascript">
+test_data = [["cdd954478d3d0d45b20853f71cc95cd273a47282","2c729c6db9b9c1309c8bdc773d1c6042eb5030f6 120c23dfb090664de305900e7887f6dea1582c7d","steveryb","Merge branch 'test1'","Sat Feb 16 15:15:31 2013 +0200"],
+["2c729c6db9b9c1309c8bdc773d1c6042eb5030f6","69b20f7eea614f56606da2f8c37f809e8dc51239","steveryb","testing","Sat Feb 16 15:15:26 2013 +0200"],
+["12312312313","69b20f7eea614f56606da2f8c37f809e8dc51239","steveryb","testing","Sat Feb 16 15:15:26 2013 +0200"],
+["120c23dfb090664de305900e7887f6dea1582c7d","69b20f7eea614f56606da2f8c37f809e8dc51239","steveryb","testing","Sat Feb 16 15:15:01 2013 +0200"],
+["69b20f7eea614f56606da2f8c37f809e8dc51239","","steveryb","initial commit","Sat Feb 16 15:07:30 2013 +0200"]]
+
+full_data = [["aaaaa","","","",""],
+["abbbb","aaaaa","","",""],
+["acccc","abbbb","","",""],
+["bbbbb","acccc","","",""],
+["bran1","bbbbb","","",""],
+["bran2","bbbbb","","",""],
+["merge","bran1 bran2","","",""]]
+
+fuller_data = [["aaaaa","","","",""],
+["abbbb","aaaaa","","",""],
+["acccc","abbbb","","",""],
+["bbbbb","acccc","","",""],
+["bran1","bbbbb","","",""],
+["bran2","bbbbb","","",""],
+["merge","bran1 bran2","","",""],
+["new","merge","","",""]]
+heads = [["branch1","bran1"],["master","merge"]]
+tree = new GitTree(600,1000,"#graph","git_tree");
+tree.makeGraph(full_data, heads)
+//tree.makeGraph(fuller_data,[]);
+
+states = new GitStates(600,400,"#states","#console");
+</script>
+</body>
+</html>
